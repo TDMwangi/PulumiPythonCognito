@@ -30,8 +30,6 @@ jobs:
           echo "stack=prod" >> $GITHUB_ENV
           echo "prod_directory=prod" >> $GITHUB_ENV
           echo "staging_directory=staging" >> $GITHUB_ENV
-        else:
-          exit 1
         fi
       shell: bash
     
