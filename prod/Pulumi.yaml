@@ -1,0 +1,11 @@
+name: prod
+runtime:
+  name: python
+  options:
+    toolchain: pip
+    virtualenv: venv
+description: Production deployment
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-python

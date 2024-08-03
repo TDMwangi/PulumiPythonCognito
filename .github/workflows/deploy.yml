@@ -1,0 +1,65 @@
+name: Pulumi deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+    
+    - name: Install Pulumi
+      run: |
+        curl -fsSL https://get.pulumi.com | sh
+        export PATH=$PATH:$HOME/.pulumi/bin
+    
+    - name: Determine deployment environment
+      id: stack
+      run: |
+        if [ -f "prod/Pulumi.prod.yaml" ] && [ -f "staging/Pulumi.staging.yaml" ]; then
+          echo "stack=prod" >> $GITHUB_ENV
+          echo "prod_directory=prod" >> $GITHUB_ENV
+          echo "staging_directory=staging" >> $GITHUB_ENV
+        else:
+          echo "Required Pulumi configuration files are missing. Exiting."
+        fi
+      shell: bash
+    
+    - name: Pulumi login
+      run: pulumi login --non-interactive
+      env:
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+    
+    - name: Deploy staging resources
+      run: |
+        cd ${{ env.staging_directory }}
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pulumi stack select staging
+        pulumi up --yes
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+    
+    - name: Deploy production resources
+      run: |
+        cd ${{ env.prod_directory }}
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pulumi stack select prod
+        pulumi up --yes
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
