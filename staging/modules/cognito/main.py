@@ -3,9 +3,9 @@ import pulumi_aws as aws
 
 def cognito_user_pool():
     user_pool = aws.cognito.UserPool(
-        "cognito_user_pool",
-        name="tdm-user-pool-staging",
-        deletion_protection="ACTIVE",
+        "tdm_user_pool",
+        name="tdm-user-pool",
+        deletion_protection="INACTIVE",
         auto_verified_attributes=["email"],
 
         user_attribute_update_settings=aws.cognito.UserPoolUserAttributeUpdateSettingsArgs(
@@ -36,8 +36,8 @@ def cognito_user_pool():
     )
 
     aws.cognito.UserPoolClient(
-        "cognito_app_client",
-        name="tdm-app-client-staging",
+        "tdm_app_client",
+        name="tdm-app-client",
         user_pool_id=user_pool.id,
         access_token_validity=24,
         generate_secret=True,
